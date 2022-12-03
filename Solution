@@ -1,0 +1,287 @@
+import java.util.*;
+import javax.lang.model.util.ElementScanner14;
+import java.io.*;
+
+public class Solution{
+
+    
+
+    public static void main(String[] args){
+
+        int lives = 200;
+
+        Scanner myScanner = new Scanner(System.in);
+        String[] array = new String[20];
+        String[] input = new String[20];
+
+        Maze mz = new Maze();
+        for(int i=0;i<20;i++){
+            input[i]=mz.getX(i);
+            
+        }
+      /*   for(int i=0;i<20;i++){
+
+            input[i]=myScanner.nextLine();
+
+        } */ 
+
+        
+
+        int posX=Integer.parseInt(myScanner.nextLine());
+
+        int posY=Integer.parseInt(myScanner.nextLine());
+
+        
+
+        boolean[][] maze = new boolean[20][20];
+
+        for(int i=0;i<20;i++){
+
+            for(int j=0;j<20;j++){
+
+                if(input[i].charAt(j)=='X'){
+
+                    maze[i][j]=false;
+
+                }else{
+
+                    maze[i][j]=true;
+
+                }
+
+            }
+
+        }
+
+        Brain myBrain = new Brain();
+        
+        
+
+        
+
+       while(lives>0){
+
+            String move =myBrain.getMove(maze[posX-1][posY],maze[posX+1][posY],maze[posX][posY+1],maze[posX][posY-1]);
+
+            if(move.equals("north")&&maze[posX-1][posY]){
+               
+
+                posX--;
+                
+
+            }else if(move.equals("south")&&maze[posX+1][posY]){
+                
+
+                posX++;
+              
+
+            }else if(move.equals("east")&&maze[posX][posY+1]){
+                
+                posY++;
+              
+            }else if(move.equals("west")&&maze[posX][posY-1]){
+                
+                posY--;
+                
+            }
+
+            lives--;
+
+            if(posY%19==0||posX%19==0){
+
+                System.out.println(posX+","+posY);
+
+                System.exit(0);
+
+            }
+
+        }
+
+        System.out.println("You died in the maze!");
+
+    }// end of the sub code provided to us as part of the problem
+
+    public static class Maze{
+     
+        private String input[]; 
+    
+        public Maze(){
+            input = load("C:/Users/kevin/OneDrive/Documents/HDIP MAYNOOTH SOFT DEVELOP/data and algo/maze.txt");  
+            
+        }
+        
+        public int getSize(){
+            return input.length;
+        }
+        
+        public String getX (int n){
+            return input[n].trim();
+        }
+        
+        private String[] load(String file) {
+            File aFile = new File(file);     
+            StringBuffer contents = new StringBuffer();
+            BufferedReader input = null;
+            try {
+                input = new BufferedReader( new FileReader(aFile) );
+                String line = null; 
+                int i = 0;
+                while (( line = input.readLine()) != null){
+                    contents.append(line);
+                    i++;
+                    contents.append(System.getProperty("line.separator"));
+                }
+            }catch (FileNotFoundException ex){
+                System.out.println("Can't find the file - are you sure the file is in this location: "+file);
+                ex.printStackTrace();
+            }catch (IOException ex){
+                System.out.println("Input output exception while processing file");
+                ex.printStackTrace();
+            }finally{
+                try {
+                    if (input!= null) {
+                        input.close();
+                    }
+                }catch (IOException ex){
+                    System.out.println("Input output exception while processing file");
+                    ex.printStackTrace();
+                }
+            }
+            String[] array = contents.toString().split("\n");
+            for(String s: array){
+                s.trim();
+            }
+            return array;
+        }
+
+}// end of maze class which i used to take a maze.txt file as an input. 
+  	public  static class Brain{
+   
+      static stack theStack= new stack(201);
+      static int x=20;
+      static int y=20;
+      static boolean[][] isVisited = new boolean[40][40];  // accessible by any method in the class brain
+                                                         // 2D boolean array 40 by 40 as i will never go out of bounds as it is double the map size
+     
+
+      public static String getMove( boolean north, boolean south, boolean east, boolean west){
+
+          isVisited[x][y]=true;// sets current cordinates to true to prevent going back to the same positin unless i meet a dead end
+
+          if(north==false){
+
+              isVisited[x-1][y]=true;
+          }// sets north to true in my 2 day boolean arrrayas it is a wall and i dont want to go there
+
+          if(south==false){
+
+              isVisited[x+1][y]=true;// sets south to true
+
+          }
+          if(east==false){
+
+              isVisited[x][y+1]=true; //sets east to true as it is a wall and i dont want to go there
+
+          }
+          if(west==false){
+              isVisited[x][y-1]=true;  //sets west to true as it is a wall and i dont want to go there
+          }
+
+          if ( isVisited[x-1][y]==false){
+
+          x=x-1; // X position goes north on my 2D array
+
+          theStack.push("south");// i push the opposite direction on to the stack so i can just go back
+
+          return "north";//as north is a valid, i return north
+          }
+          if(isVisited[x+1][y]==false){
+
+          x=x+1; // X position goes south on my 2D array
+
+          theStack.push("north");//as south is a valid, i return north
+
+          return "south";
+          }
+
+           if(isVisited[x][y+1]==false){ 
+           
+          y=y+1;  //Y position goes east on my 2D array
+
+          theStack.push("west"); //as east is a valid, i return north
+
+          return "east";
+          }
+
+          if(isVisited[x][y-1]==false){
+          
+          y=y-1; //Y position goes west on my 2D array
+
+          theStack.push("east");//as west is a valid, i return north
+
+          return "west";
+          }
+
+          else{
+
+            String varPop = theStack.peek(); // declares the peek of the stack as a variable
+
+            theStack.pop(); // i pop the stack
+
+            switch(varPop){ // switch statements determines how to get out of a dead end
+
+              case "north": x=x-1; return "north"; // NB - change x and y cordinates when popping from the stack as 2D array must go back
+
+              case "south":x=x+1; return "south"; // last move brough us to a dead end so we must go back based on the directions in the stack
+
+              case "east": y=y+1; return "east";
+
+              default: y=y-1; return "west";
+            }
+
+
+
+         }
+      }
+
+
+    }
+
+
+
+public static class  stack{
+    private int maxSize; // size of stack array
+    private String[] stackArray;
+    private int top; // top of sta
+
+    public stack(int s) { // constructor
+    maxSize = s; // set array size
+    stackArray = new String[maxSize]; // create array
+    top = -1; // no items yet
+    } 
+
+     public boolean isEmpty() { // true if stack is empty
+            return (top == -1);
+            }
+    public boolean isFull() { // true if stack is full
+            return (top == maxSize-1);
+    }
+    public void makeEmpty() { // empty stack
+            top=-1;
+            }
+    public void push(String j) { // put item on top of stack
+                top++;
+                stackArray[top] = j; // increment top, insert item
+            }
+     public String pop() 
+            { // take item from top of stack
+                return stackArray[top--]; //access item, decrement top
+            }
+    public String peek() { // peek at top of stack
+                return stackArray[top];
+            }
+    }
+ 
+
+
+}
